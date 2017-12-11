@@ -96,12 +96,9 @@ class UserDetailsFragment : Fragment() {
                     val reposList = response?.body() ?: arrayListOf()
                     Toast.makeText(activity, "current: ${reposListAdapter.itemCount} new: ${reposList.size}",
                             Toast.LENGTH_SHORT).show()
-                    for (i in 0 until reposList.size) {
-                        reposListAdapter.addItem(reposList[i])
+                        reposListAdapter.addItems(reposList)
                     }
                 }
-            }
-
             override fun onFailure(call: Call<List<Repo>>?, t: Throwable?) {
                 Toast.makeText(activity, "can't get user repos!", Toast.LENGTH_SHORT).show()
             }

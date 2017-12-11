@@ -11,6 +11,7 @@ import android.widget.Toast
 import com.example.radmushroom.cloudmade_testtask_bugay_sergey.adapter.OnItemPositionClickListener
 import com.example.radmushroom.cloudmade_testtask_bugay_sergey.adapter.UserListAdapter
 import com.example.radmushroom.cloudmade_testtask_bugay_sergey.model.SearchResponse
+import com.example.radmushroom.cloudmade_testtask_bugay_sergey.model.User
 import com.example.radmushroom.cloudmade_testtask_bugay_sergey.network.ApiService
 import kotlinx.android.synthetic.main.fragment_main.*
 import retrofit2.Call
@@ -20,7 +21,8 @@ import retrofit2.Response
 class MainFragment : Fragment(), OnItemPositionClickListener {
 
     private var searchQuery: String = ""
-    private val userListAdapter = UserListAdapter(this)
+    private lateinit var responseList: MutableList<User>
+    private var userListAdapter = UserListAdapter(this)
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_main, container, false)
@@ -49,12 +51,16 @@ class MainFragment : Fragment(), OnItemPositionClickListener {
             }
         })
         searchButton.setOnClickListener {
-                searchQuery = searchEditText.text.toString().trim()
-                searchEditText.hideKeyboard()
-                searchEditText.clearFocus()
-                searchUsers(searchQuery, 1)
+                getUsersList()
             }
         }
+
+    private fun getUsersList() {
+        searchQuery = searchEditText.text.toString().trim()
+        searchEditText.hideKeyboard()
+        searchEditText.clearFocus()
+        searchUsers(searchQuery, 1)
+    }
 
     private fun searchUsers(searchQuery: String, page: Int) {
         if (searchQuery.isNotEmpty()) {
@@ -65,12 +71,15 @@ class MainFragment : Fragment(), OnItemPositionClickListener {
 
                 override fun onResponse(call: Call<SearchResponse>?, response: Response<SearchResponse>?) {
                     activity.runOnUiThread {
-                      val  responseList = response?.body()?.items ?: arrayListOf()
+                        responseList = response?.body()?.items ?: arrayListOf()
                         Toast.makeText(activity, "current: ${userListAdapter.itemCount} new : ${responseList.size}", Toast.LENGTH_SHORT).show()
-                        for (i in 0 until responseList.size)
-                                userListAdapter.addItem(responseList[i])
+                        if (page == 1) {
+                            userListAdapter.setList(responseList)
+                        } else {
+                                userListAdapter.addItems(responseList)
                         }
                     }
+                }
             })
         } else {
             Toast.makeText(activity, "SearchBox can't be empty!", Toast.LENGTH_SHORT).show()
